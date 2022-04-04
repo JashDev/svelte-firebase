@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {session, setSession} from "../../store";
+    import {session, setMyPlayer, setSession} from "../../store";
     import {Player} from "../../types/Player";
     import {onDestroy} from "svelte";
 
@@ -23,6 +23,9 @@
             player.balance = 1500
             const res = await player.createPlayer()
             setSession(res.id)
+            player.id = res.id
+            setMyPlayer(player)
+
             player = new Player()
         } catch (e) {
             console.error(e)

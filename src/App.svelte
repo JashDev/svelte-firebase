@@ -1,6 +1,14 @@
 <script lang="ts">
     import PlayerList from "./components/players/PlayerList.svelte";
-    import {session, setSession, playersStore, setPlayers, setFreeStopInstance} from "./store"
+    import {
+        session,
+        setSession,
+        playersStore,
+        setPlayers,
+        setFreeStopInstance,
+        setMyPlayer,
+        myPlayerStore
+    } from "./store"
     import {Player} from "./types/Player";
     import {onDestroy} from "svelte";
     import JoinGameForm from "./components/players/JoinGameForm.svelte";
@@ -18,6 +26,7 @@
 
     const playersFirebaseInstance = new FirebaseService("players");
     const sp = (snapshot) => {
+        console.log("players snapshot", snapshot)
         let p = []
         snapshot.docs.forEach(doc => {
             const newPlayer = new Player({
@@ -51,6 +60,11 @@
     const unsubscribePlayers = playersStore.subscribe((value) => {
         players = value
         myPlayer = value.find(player => player.id === userID)
+        setMyPlayer(myPlayer)
+    })
+
+    const unsubscribeMyPlayer = myPlayerStore.subscribe((value) => {
+        myPlayer = value
     })
 
     const depositFromFreeStop = async () => {
@@ -64,6 +78,7 @@
         unsubscribePlayers()
         unsub()
         unsubFreeStop()
+        unsubscribeMyPlayer()
     })
 </script>
 

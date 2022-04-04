@@ -10,6 +10,8 @@ export const playersStore = writable<Player[]>([])
 
 export const freeStopInstance = writable<FreeStop>(null)
 
+export const myPlayerStore = writable<Player>(null)
+
 export const setSession = (userID) => {
     localStorage.setItem('userID', JSON.stringify(userID))
     session.set({userID})
@@ -26,4 +28,8 @@ export const setPlayers = (p: Player[]) => {
 
 export const setFreeStopInstance = (freeStop) => {
     freeStopInstance.set(freeStop)
+}
+
+export const setMyPlayer = (player) => {
+    myPlayerStore.set(player)
 }
