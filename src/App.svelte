@@ -1,49 +1,40 @@
 <script lang="ts">
-    import {Task} from "./types/Task";
-    import {createTaskService, updateTaskService} from "./services/task.service";
-    import TaskItems from "./components/TaskItems.svelte";
+    import PlayerList from "./components/players/PlayerList.svelte";
+    import {session, setSession, playersStore} from "./store"
+    import {Player} from "./types/Player";
+    import {onDestroy} from "svelte";
+    import JoinGameForm from "./components/players/JoinGameForm.svelte";
+    import MyPlayerData from "./components/players/MyPlayerData.svelte";
 
-
-    let task = new Task()
-    let isEdit = false;
-
-    const handleSubmit = async (e) => {
-        console.log(task)
-        if (!isEdit) {
-            await createTaskService(task)
-        } else {
-            await updateTaskService(task)
-        }
-        isEdit = false;
-        task = new Task()
-        console.log('submitted')
+    let userID = localStorage.getItem('userID')
+    if (userID) {
+        setSession(JSON.parse(userID))
     }
+    const unsubscribeSession = session.subscribe(value => {
+        userID = value.userID
+    })
 
-    let showItems = true
+    let players: Player[] = []
+    let myPlayer: Player | null = null
+    const unsubscribePlayers = playersStore.subscribe((value) => {
+        players = value
+        myPlayer = value.find(player => player.id === userID)
+    })
 
-    const setEdit = (taskEdit: Task) => {
-        console.log('set edit', )
-        task = taskEdit
-        isEdit = true
-    }
+    onDestroy(async () => {
+        unsubscribeSession()
+        unsubscribePlayers()
+    })
 </script>
 
 <main>
-    <form on:submit|preventDefault={handleSubmit}>
-        <label for="title">Title</label>
-        <input bind:value={task.title} type="text" id="title">
+    {#if !userID}
+        <JoinGameForm/>
+    {:else}
+        <MyPlayerData myPlayer={myPlayer} players={players}/>
 
-        <label for="description">Description</label>
-        <textarea bind:value={task.description} id="description"></textarea>
-
-        <button type="submit">Save</button>
-    </form>
-
-    {#if showItems}
-        <TaskItems  setEdit={setEdit}/>
+        <PlayerList/>
     {/if}
-
-    <button on:click={() => showItems = !showItems}>Ocultar items</button>
 </main>
 
 <style>

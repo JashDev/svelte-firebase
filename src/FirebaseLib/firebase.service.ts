@@ -1,6 +1,5 @@
-import {addDoc, collection, deleteDoc, onSnapshot, doc, updateDoc} from "firebase/firestore";
+import {addDoc, collection, deleteDoc, onSnapshot, doc, updateDoc, DocumentReference} from "firebase/firestore";
 import {db} from "./index";
-import type {Task} from "../types/Task";
 
 export class FirebaseService {
     collectionName:string
@@ -17,7 +16,7 @@ export class FirebaseService {
             })
     }
 
-    createInFirebaseService = (instance) => {
+    createInFirebaseService = (instance): Promise<DocumentReference> => {
         delete instance.id
         return new Promise((resolve, reject) => {
             addDoc(collection(db, this.collectionName), {...instance})
@@ -38,7 +37,6 @@ export class FirebaseService {
             }).catch(error => {
                 reject(error)
             })
-
         })
     }
 
