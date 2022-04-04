@@ -1,11 +1,14 @@
 import {writable} from 'svelte/store'
 import type {Player} from "../types/Player";
+import type {FreeStop} from "../types/FreeStop";
 
 export const session = writable({
     userID: null,
 })
 
 export const playersStore = writable<Player[]>([])
+
+export const freeStopInstance = writable<FreeStop>(null)
 
 export const setSession = (userID) => {
     localStorage.setItem('userID', JSON.stringify(userID))
@@ -19,4 +22,8 @@ export const destroySession = () => {
 
 export const setPlayers = (p: Player[]) => {
     playersStore.set(p)
+}
+
+export const setFreeStopInstance = (freeStop) => {
+    freeStopInstance.set(freeStop)
 }
