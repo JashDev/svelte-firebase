@@ -74,6 +74,15 @@ export class Player implements IPlayer {
         return this;
     }
 
+    async remoteLastAction() {
+        await this.firebaseService.updateFromFirebaseService({
+            id: this.id, instance: {
+                lastAction: '',
+                payAmount: 0,
+                receiveAmount: 0,
+            }
+        })
+    }
     async payToPlayer({idWhoReceive, amount, players}: { idWhoReceive: string, amount: number, players: Player[] }) {
         const playerWhoReceive = players.find(player => player.id === idWhoReceive);
         this.balance -= amount;
@@ -82,14 +91,18 @@ export class Player implements IPlayer {
             id: this.id, instance: {
                 name: this.name,
                 balance: this.balance,
-                isActive: this.isActive
+                isActive: this.isActive,
+                lastAction: 'pay',
+                payAmount: amount,
             }
         })
         await this.firebaseService.updateFromFirebaseService({
             id: playerWhoReceive.id, instance: {
                 name: playerWhoReceive.name,
                 balance: playerWhoReceive.balance,
-                isActive: playerWhoReceive.isActive
+                isActive: playerWhoReceive.isActive,
+                lastAction: 'receive',
+                receiveAmount: amount,
             }
         })
     }

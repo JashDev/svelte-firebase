@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Swal from "sweetalert2";
     import PlayerList from "./components/players/PlayerList.svelte";
     import {
         session,
@@ -26,8 +27,13 @@
 
     const playersFirebaseInstance = new FirebaseService("players");
     const sp = (snapshot) => {
-        console.log("players snapshot", snapshot)
         let p = []
+
+        let playerWhoPay: Player
+        let playerWhoReceive: Player
+        let amountPay: number
+        let amountReceive: number
+
         snapshot.docs.forEach(doc => {
             const newPlayer = new Player({
                 id: doc.id,
@@ -35,9 +41,55 @@
                 balance: doc.data().balance,
                 isActive: true
             });
+            console.log(newPlayer.name, doc.data().lastAction)
             p = [...p, newPlayer];
             setPlayers(p)
+
+            if (doc.data().lastAction === "pay") {
+                playerWhoPay = newPlayer
+                amountPay = doc.data().payAmount
+            }
+
+            if (doc.data().lastAction === "receive") {
+                playerWhoReceive = newPlayer
+                amountReceive = doc.data().receiveAmount
+            }
+
         })
+
+        if (playerWhoPay && playerWhoReceive) {
+            if (playerWhoPay.id !== userID && playerWhoReceive.id !== userID) {
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `${playerWhoPay.name} transfirió ${amountPay} a ${playerWhoReceive.name}`,
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            }
+
+            if (playerWhoPay.id === userID) {
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `Transferiste ${amountPay} a ${playerWhoReceive.name}`,
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            }
+
+            if (playerWhoReceive.id === userID) {
+                Swal.fire({
+                    position: 'top-end',
+                    icon: 'success',
+                    title: `${playerWhoPay.name} te transfirió ${amountReceive}`,
+                    showConfirmButton: false,
+                    timer: 2500
+                });
+            }
+            playerWhoPay.remoteLastAction()
+            playerWhoReceive.remoteLastAction()
+        }
     }
     let unsub = playersFirebaseInstance.getFromFirebaseService(sp)
 
@@ -83,6 +135,7 @@
 </script>
 
 <main>
+<!--    <Alertify />-->
     {#if !userID}
         <JoinGameForm/>
     {:else}
